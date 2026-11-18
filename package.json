@@ -7,7 +7,10 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:ssr": "node scripts/test-vue-ssr.mjs",
+    "test:drag": "playwright test tests/perf/drag.spec.js",
+    "test:perf": "RUN_PERF=1 playwright test tests/perf/stress.spec.js --workers=1"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "6.0.2",

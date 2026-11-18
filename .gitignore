@@ -8,3 +8,6 @@ blob-report/
 !.env.example
 *.log
 .DS_Store
+
+.nuxt/
+.output/
