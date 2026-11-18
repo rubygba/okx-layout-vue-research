@@ -223,11 +223,11 @@ npm run preview
 |---|---|
 | Vite 生产构建 | 已通过，生成 `dist` |
 | Playwright 脚本 | 已提供，覆盖初始渲染、添加/改名、笔记、刷新恢复、重置 |
-| 自动化浏览器执行 | 此前执行被 Chromium socket 限制阻挡；默认浏览器/webServer 配置更新后尚未重跑 |
+| 自动化浏览器执行 | 已在 Chromium 实测跨组拖拽、边缘拆分、resize、持久化，并完成三轮 30 标签压测 |
 | 鼠标拖拽合并、边缘拆分、分隔条 | 依赖库原生能力，尚无本项目完成端到端验证的记录 |
 | 真实账户/网络下单 | 未实现、未测试 |
 
-**构建通过不能代替浏览器交互通过。** 当前测试脚本也不包含实际拖拽动作，不能仅跑通该脚本就宣称拖拽已测试。
+**构建通过不能代替浏览器交互通过。** 新增 `tests/perf/drag.spec.js` 使用真实鼠标手势而非 API 移动；性能样本与 GPU 限制详见 [性能测试](performance-testing.md)。30 标签并非 30 个同时绘制的可见面板，测试环境为 SwiftShader 软件渲染。
 
 普通开发机执行 `npm ci`、`npx playwright install chromium`、`npm test`。配置使用 Playwright 默认 Chromium，并通过 `webServer` 自动启动 Vite；本机已有开发服务器可复用，CI 不复用。无需硬编码系统浏览器路径。
 
