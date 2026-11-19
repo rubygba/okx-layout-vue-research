@@ -2,7 +2,7 @@
 
 参考 OKX 交易界面交互制作的独立示例。采用 **Vue 3 + dockview-vue 8.9.1**，不是 OKX 原代码，也不表示 OKX 使用 Dockview。OKX 前端技术研究与本示例实现相互独立。
 
-📖 [图文研究文档：官网证据、架构、拖拽与 Vue 实现](docs/OKX布局逆向分析与Vue实现.md)
+[在线 Demo](https://rubygba.github.io/okx-layout-vue-research/) · [图文研究文档](docs/OKX布局逆向分析与Vue实现.md) · [布局样式集成指南](docs/layout-skin-integration.md)
 
 ![工作台结构示意，非真实账户截图](docs/workspace-diagram.svg)
 
@@ -30,19 +30,24 @@ npm run dev
 
 - `src/App.vue`：DockviewApi、默认布局、组件注册、编辑弹窗、保存和恢复。
 - `src/PanelContent.vue`：示例组件内容。新增真实业务组件时，建议拆成独立 Vue SFC，并使用 Dockview `components` 注册表或 `#panel-*` 插槽映射。
-- `src/style.css`：与布局模型独立的主题 tokens、Dockview 样式和交互高亮。
+- `src/workspace/`：可复用主题配置、配色 tokens、Tab/分隔线/滚动条样式。
+- `src/style.css`：Demo 页面装饰、图表尺寸及业务示例样式，不建议迁入业务工程。
 - `tests/workspace.spec.js`：浏览器回归测试（创建、编辑、笔记、刷新恢复、重置）。
 
 当前深色主题以 [BingX BTCUSDT 永续合约页](https://bingx.com/zh-tc/perpetual/BTC-USDT) 的公开界面配色为参考：操作蓝 `#0F5FFF`，涨绿 `#27AD75`，跌红 `#F0616D`。示例不使用 BingX 标志，不是官方产品，也不连接 BingX 或 OKX 账户。
 
 布局引擎管理 split/group/tab；Vue 管理业务内容，避免自己重写碰撞检测、拖放命中和分隔线。保存使用 `api.toJSON()`，恢复使用 `api.fromJSON()`。后续接入 Nuxt 时放在 `<ClientOnly>`，本地存储只在客户端读取，行情订阅应在组件卸载时注销。
 
+## 复用布局样式
+
+复制 `src/workspace/`，先加载 Dockview 官方 CSS，再加载 `skin.css`。在 `.workspace-skin` 容器中给 Dockview 传入 `workspaceOptions`，并对需要细滚动条的业务容器加 `.workspace-scroll`。Tab 可直接复用；**加宽分隔线必须连同原生间距配置一起接入**，否则会侵占滚动条。配色可用业务 tokens 覆盖。完整代码见[集成指南](docs/layout-skin-integration.md)。
+
 ## 校验状态和限制
 
 - `npm run build`：通过，已生成 dist。
 - Chromium 浏览器实测已通过：标签跨组移动（内容同步）、边缘拆分、分隔条 resize 和刷新持久化。修复了 DockviewVue 外层未明确高度导致面板仅 100px 的问题。
 - 30 标签 / 20 次真实指针拖拽压测三轮通过，rAF p95 16.7–16.8ms，长任务 0。环境是 SwiftShader 软件渲染、静态模拟内容，不代表物理 GPU 或生产行情性能。详见 [性能测试与限制](docs/performance-testing.md)。
-- 拖放合并、边缘拆分、尺寸调整由 Dockview 内建支持；真实鼠标自动化见 `tests/perf/drag.spec.js`，目标硬件及触屏仍需单独验收。
+- 拖放合并、边缘拆分、尺寸调整由 Dockview 内建支持；真实鼠标自动化见 `tests/perf/drag.spec.js` 与 `tests/splitter-scrollbar.spec.js`，目标硬件及触屏仍需单独验收。
 - 全部行情、订单、仓位为静态模拟数据。交易按钮禁用；没有 OKX 登录、API 密钥、网络下单。
 - 非像素级复刻，未实现真实 K 线、交易引擎、账户云端同步、导入 JSON、多工作区或触屏专项测试。
 - 存储采用版本号和异常回退；若对不可信 JSON 开放导入，应另加 schema 校验、组件白名单、迁移及大小限制。
