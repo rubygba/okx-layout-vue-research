@@ -30,8 +30,10 @@ npm run dev
 
 - `src/App.vue`：DockviewApi、默认布局、组件注册、编辑弹窗、保存和恢复。
 - `src/PanelContent.vue`：示例组件内容。新增真实业务组件时，建议拆成独立 Vue SFC，并使用 Dockview `components` 注册表或 `#panel-*` 插槽映射。
-- `src/style.css`：深色交易风格与 Dockview CSS 变量。
+- `src/style.css`：与布局模型独立的主题 tokens、Dockview 样式和交互高亮。
 - `tests/workspace.spec.js`：浏览器回归测试（创建、编辑、笔记、刷新恢复、重置）。
+
+当前深色主题以 [BingX BTCUSDT 永续合约页](https://bingx.com/zh-tc/perpetual/BTC-USDT) 的公开界面配色为参考：操作蓝 `#0F5FFF`，涨绿 `#27AD75`，跌红 `#F0616D`。示例不使用 BingX 标志，不是官方产品，也不连接 BingX 或 OKX 账户。
 
 布局引擎管理 split/group/tab；Vue 管理业务内容，避免自己重写碰撞检测、拖放命中和分隔线。保存使用 `api.toJSON()`，恢复使用 `api.fromJSON()`。后续接入 Nuxt 时放在 `<ClientOnly>`，本地存储只在客户端读取，行情订阅应在组件卸载时注销。
 
