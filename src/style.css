@@ -1,14 +1,15 @@
-/* Theme v4: independent BingX-inspired demo, not an official product.
+/* Theme v5: independent BingX-inspired demo, not an official product.
    Active tabs use an absolute indicator, never state-dependent geometry.
    Sash hover/active is CSS-only; disabled dividers do not highlight. */
 :root {
-  --workspace-theme-version: 4;
+  --workspace-theme-version: 5;
   --workspace-accent: #0F5FFF;
   --workspace-accent-hover: #71A1FF;
   --workspace-bg: #020202;
   --workspace-surface: #141519;
   --workspace-header: #23242B;
   --workspace-border: #363942;
+  --workspace-gutter: #111216;
   --workspace-muted: #8693a7;
   --workspace-text: #e8edf5;
   --workspace-text-secondary: #bbc2c6;
@@ -218,6 +219,7 @@ main {
 
 main .dv-dockview {
   height: 100%;
+  background: var(--workspace-gutter);
   --dv-tab-divider-color: transparent;
   --dv-tabs-and-actions-container-height: 36px;
   --dv-tabs-and-actions-container-font-size: 12px;
@@ -231,7 +233,7 @@ main .dv-dockview {
   --dv-inactivegroup-visiblepanel-tab-color: #c9d5ea;
   --dv-activegroup-hiddenpanel-tab-color: #8492a8;
   --dv-inactivegroup-hiddenpanel-tab-color: #8492a8;
-  --dv-separator-border: var(--workspace-border);
+  --dv-separator-border: transparent;
   --dv-sash-color: transparent;
   --dv-active-sash-color: transparent;
   --dv-active-sash-transition-delay: 0s;
@@ -721,8 +723,15 @@ main .dv-tab .dv-default-tab-content::after {
 main .dv-tab.dv-active-tab .dv-default-tab-content::after { opacity: 1; }
 main .dv-tab .dv-default-tab-action { flex-shrink: 0; }
 
-/* Dockview positions a hard-coded 4px sash: expand to 10px and offset -3px
-   to preserve its center. Shorten the long axis 4px at both ends to avoid T-junction overlap. */
+/* App.vue reserves a real 14px engine gutter (10px target + 2px clearance per side) and disables native view borders.
+   Dockview positions a 4px sash at its center; expand it by 6px, offset by -3px.
+   The sash owns the only separator paint and never covers panel content or its scrollbar.
+   Full-length hit regions meet at reserved parent gutters, including T junctions. */
+main .dv-dockview .dv-split-view-container > .dv-view-container > .dv-view::before {
+  /* The sash owns the visible divider; suppress Dockview's separate pane-edge stripe. */
+  content: none;
+}
+
 main .dv-sash {
   --workspace-sash-line-size: 2px;
   --workspace-sash-line-color: var(--workspace-border);
@@ -732,15 +741,15 @@ main .dv-sash {
 
 main .dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash {
   width: 10px;
-  height: calc(100% - 8px);
+  height: 100%;
   margin-left: -3px;
-  margin-top: 4px;
+  margin-top: 0;
 }
 main .dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash {
   height: 10px;
-  width: calc(100% - 8px);
+  width: 100%;
   margin-top: -3px;
-  margin-left: 4px;
+  margin-left: 0;
 }
 
 main .dv-sash::after {
@@ -751,16 +760,16 @@ main .dv-sash::after {
 }
 
 main .dv-horizontal > .dv-sash-container > .dv-sash::after {
-  top: 2px;
-  bottom: 2px;
+  top: 0;
+  bottom: 0;
   left: 50%;
   width: var(--workspace-sash-line-size);
   transform: translateX(-50%);
 }
 
 main .dv-vertical > .dv-sash-container > .dv-sash::after {
-  left: 2px;
-  right: 2px;
+  left: 0;
+  right: 0;
   top: 50%;
   height: var(--workspace-sash-line-size);
   transform: translateY(-50%);
