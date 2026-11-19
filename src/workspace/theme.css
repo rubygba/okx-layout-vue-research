@@ -1,0 +1,31 @@
+/* Configurable defaults, not an official exchange theme. Override variables on
+   .workspace-skin after this import. No :root/body/global resets are shipped. */
+.workspace-skin {
+  --workspace-theme-version: 5;
+  --workspace-accent: #0F5FFF;
+  --workspace-accent-hover: #71A1FF;
+  --workspace-bg: #020202;
+  --workspace-surface: #141519;
+  --workspace-header: #23242B;
+  --workspace-border: #363942;
+  --workspace-gutter: #111216;
+  --workspace-muted: #8693a7;
+  --workspace-text: #e8edf5;
+  --workspace-text-secondary: #bbc2c6;
+  --workspace-up: #27AD75;
+  --workspace-down: #F0616D;
+  --workspace-up-subtle: #27AD7526;
+  --workspace-accent-subtle: #0F5FFF29;
+  --workspace-scroll-thumb: #454b58;
+  --workspace-scroll-thumb-hover: #677184;
+  --workspace-tab-active: #ecf2ff;
+  --workspace-tab-inactive: #c9d5ea;
+  --workspace-tab-hidden: #8492a8;
+  --workspace-header-divider: #2b2e35;
+  --workspace-tab-pill: #303030;
+  --workspace-tab-grip: #929292;
+  --workspace-close-badge: #9b9b9b;
+  --workspace-close-icon: #202020;
+  --workspace-add-color: #93a6c4;
+  --workspace-add-hover: #ffffff08;
+}

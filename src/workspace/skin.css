@@ -1,0 +1,267 @@
+/* Migration: load dockview-vue/dist/styles/dockview.css FIRST, then this file.
+   Wrap Dockview in .workspace-skin, pass workspaceOptions from theme.js, and add
+   .workspace-scroll to scroll containers. Import neither demo style.css nor its
+   global resets into an integrating app. Keep gap=14 and the 10px CSS hit target
+   together; geometry targets pinned Dockview 8.9.1. Nuxt: load CSS globally and
+   mount Dockview inside ClientOnly; this module has no runtime DOM access. */
+@import './theme.css';
+
+.workspace-skin .dv-dockview {
+  height: 100%;
+  background: var(--workspace-gutter);
+  --dv-tab-divider-color: transparent;
+  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-font-size: 12px;
+  --dv-group-view-background-color: var(--workspace-surface);
+  --dv-tabs-and-actions-container-background-color: var(--workspace-surface);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--workspace-surface);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--workspace-surface);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--workspace-surface);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--workspace-surface);
+  --dv-activegroup-visiblepanel-tab-color: var(--workspace-tab-active);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--workspace-tab-inactive);
+  --dv-activegroup-hiddenpanel-tab-color: var(--workspace-tab-hidden);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--workspace-tab-hidden);
+  --dv-separator-border: transparent;
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: transparent;
+  --dv-active-sash-transition-delay: 0s;
+  --dv-active-sash-transition-duration: 0.08s;
+  --dv-drag-over-background-color: var(--workspace-accent-subtle);
+  --dv-drag-over-border-color: var(--workspace-accent);
+}
+
+.workspace-skin .group-add {
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.5;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 0 10px;
+  font-size: 17px;
+  height: 32px;
+  background: transparent;
+  border: 0;
+  color: var(--workspace-add-color);
+}
+/* Header separator is painted inside the existing box, so its height never changes. */
+.workspace-skin .dv-tabs-and-actions-container,
+.workspace-skin .dv-tab {
+  box-shadow: inset 0 -1px 0 var(--workspace-header-divider);
+}
+.workspace-skin .dv-tab {
+  box-sizing: border-box;
+  position: relative;
+  border-top: 0;
+  padding: 0 12px 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  transition: color 140ms ease;
+}
+.workspace-skin .dv-tab .dv-default-tab-content {
+  position: relative;
+  isolation: isolate;
+  line-height: 20px;
+}
+/* One hover surface owns title, grip and native close control. Nothing changes tab geometry. */
+.workspace-skin .dv-tab .dv-default-tab {
+  box-sizing: border-box;
+  isolation: isolate;
+  padding-right: 12px;
+}
+.workspace-skin .dv-tab .dv-default-tab::before {
+  content: '';
+  position: absolute;
+  inset: 5px -8px 5px -12px;
+  border-radius: 8px;
+  background: var(--workspace-tab-pill);
+  opacity: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+.workspace-skin .dv-tab .dv-default-tab::after {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 12px;
+  width: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--workspace-tab-grip);
+  box-shadow: 0 4px 0 var(--workspace-tab-grip), 0 8px 0 var(--workspace-tab-grip);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+.workspace-skin .dv-tab:is(:hover, :focus-within) .dv-default-tab::before,
+.workspace-skin .dv-tab:is(:hover, :focus-within) .dv-default-tab::after { opacity: 1; }
+/* Preserve Dockview's button and event handlers; only replace its inline-square styling. */
+.workspace-skin .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action {
+  position: absolute;
+  top: 1px;
+  right: -10px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  padding: 3px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, var(--workspace-close-badge) 87.5%, transparent 91%);
+  color: var(--workspace-close-icon);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 140ms ease;
+}
+.workspace-skin .dv-dockview .dv-tab:is(:hover, :focus-within) .dv-default-tab .dv-default-tab-action {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.workspace-skin .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action svg {
+  width: 9px;
+  height: 9px;
+  min-width: 0;
+  min-height: 0;
+}
+@media (hover: none) {
+  .workspace-skin .dv-tab .dv-default-tab::before,
+  .workspace-skin .dv-tab .dv-default-tab::after { opacity: 1; }
+  .workspace-skin .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+.workspace-skin .dv-tab .dv-default-tab-content::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--workspace-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+.workspace-skin .dv-tab.dv-active-tab .dv-default-tab-content::after { opacity: 1; }
+.workspace-skin .dv-tab .dv-default-tab-action { flex-shrink: 0; }
+
+/* theme.js reserves a real 14px engine gutter (10px target + 2px clearance per side) and disables native view borders.
+   Dockview positions a 4px sash at its center; expand it by 6px, offset by -3px.
+   The sash owns the only separator paint and never covers panel content or its scrollbar.
+   Full-length hit regions meet at reserved parent gutters, including T junctions. */
+.workspace-skin .dv-dockview .dv-split-view-container > .dv-view-container > .dv-view::before {
+  /* The sash owns the visible divider; suppress Dockview's separate pane-edge stripe. */
+  content: none;
+}
+
+.workspace-skin .dv-sash {
+  --workspace-sash-line-size: 2px;
+  --workspace-sash-line-color: var(--workspace-border);
+  background: transparent;
+  overflow: hidden;
+}
+
+.workspace-skin .dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash {
+  width: 10px;
+  height: 100%;
+  margin-left: -3px;
+  margin-top: 0;
+}
+.workspace-skin .dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash {
+  height: 10px;
+  width: 100%;
+  margin-top: -3px;
+  margin-left: 0;
+}
+
+.workspace-skin .dv-sash::after {
+  content: '';
+  position: absolute;
+  background: var(--workspace-sash-line-color);
+  pointer-events: none;
+}
+
+.workspace-skin .dv-horizontal > .dv-sash-container > .dv-sash::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--workspace-sash-line-size);
+  transform: translateX(-50%);
+}
+
+.workspace-skin .dv-vertical > .dv-sash-container > .dv-sash::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--workspace-sash-line-size);
+  transform: translateY(-50%);
+}
+
+.workspace-skin .dv-sash:not(.dv-disabled):hover,
+.workspace-skin .dv-sash:not(.dv-disabled):active {
+  --workspace-sash-line-size: 3px;
+  --workspace-sash-line-color: var(--workspace-accent);
+}
+
+/* One surface across labels, empty tab-strip space and header actions. */
+.workspace-skin .dv-tab:hover { color: var(--workspace-text); }
+.workspace-skin .group-add:hover { background: var(--workspace-add-hover); }
+
+/* Genuine content overflow remains scrollable; scope chrome to this app. */
+.workspace-skin .workspace-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--workspace-scroll-thumb) transparent;
+}
+.workspace-skin .workspace-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.workspace-skin .workspace-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.workspace-skin .workspace-scroll::-webkit-scrollbar-thumb {
+  background: var(--workspace-scroll-thumb);
+  border-radius: 6px;
+}
+.workspace-skin .workspace-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--workspace-scroll-thumb-hover);
+}
+.workspace-skin .workspace-scroll:hover {
+  scrollbar-color: var(--workspace-scroll-thumb-hover) transparent;
+}
+.workspace-skin .workspace-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-skin .dv-tab,
+  .workspace-skin .dv-tab .dv-default-tab::before,
+  .workspace-skin .dv-tab .dv-default-tab::after,
+  .workspace-skin .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action,
+  .workspace-skin .dv-tab .dv-default-tab-content::after {
+    transition: none;
+  }
+  .workspace-skin .dv-dockview {
+    --dv-active-sash-transition-duration: 0s;
+  }
+}
+
+/* Blink/WebKit get an exact 6px track; Firefox retains the standards-based thin fallback. */
+@supports selector(::-webkit-scrollbar) {
+  .workspace-skin .workspace-scroll,
+  .workspace-skin .workspace-scroll:hover {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}
+
+.workspace-skin .group-add:focus-visible {
+  outline: 2px solid var(--workspace-accent-hover);
+  outline-offset: 2px;
+}
