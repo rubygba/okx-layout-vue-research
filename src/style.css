@@ -1,8 +1,8 @@
-/* Theme v3: independent BingX-inspired demo, not an official product.
+/* Theme v4: independent BingX-inspired demo, not an official product.
    Active tabs use an absolute indicator, never state-dependent geometry.
    Sash hover/active is CSS-only; disabled dividers do not highlight. */
 :root {
-  --workspace-theme-version: 3;
+  --workspace-theme-version: 4;
   --workspace-accent: #0F5FFF;
   --workspace-accent-hover: #71A1FF;
   --workspace-bg: #020202;
@@ -635,19 +635,77 @@ main .dv-tab .dv-default-tab-content {
   isolation: isolate;
   line-height: 20px;
 }
-/* The rounded hover pill and underline follow the label, not the close-button slot. */
-main .dv-tab .dv-default-tab-content::before {
+/* One hover surface owns title, grip and native close control. Nothing changes tab geometry. */
+main .dv-tab .dv-default-tab {
+  isolation: isolate;
+  padding-right: 12px;
+}
+main .dv-tab .dv-default-tab::before {
   content: '';
   position: absolute;
-  inset: -3px -7px;
-  border-radius: 6px;
-  background: #ffffff14;
+  inset: 5px -8px 5px -12px;
+  border-radius: 8px;
+  background: #303030;
   opacity: 0;
   z-index: -1;
   pointer-events: none;
   transition: opacity 140ms ease;
 }
-main .dv-tab:hover .dv-default-tab-content::before { opacity: 1; }
+main .dv-tab .dv-default-tab::after {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 12px;
+  width: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: #929292;
+  box-shadow: 0 4px 0 #929292, 0 8px 0 #929292;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+main .dv-tab:is(:hover, :focus-within) .dv-default-tab::before,
+main .dv-tab:is(:hover, :focus-within) .dv-default-tab::after { opacity: 1; }
+/* Preserve Dockview's button and event handlers; only replace its inline-square styling. */
+main .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action {
+  position: absolute;
+  top: 1px;
+  right: -10px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  padding: 3px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, #9b9b9b 87.5%, transparent 91%);
+  color: #202020;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 140ms ease;
+}
+main .dv-dockview .dv-tab:is(:hover, :focus-within) .dv-default-tab .dv-default-tab-action {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+main .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action svg {
+  width: 9px;
+  height: 9px;
+  min-width: 0;
+  min-height: 0;
+}
+@media (hover: none) {
+  main .dv-tab .dv-default-tab::before,
+  main .dv-tab .dv-default-tab::after { opacity: 1; }
+  main .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
 main .dv-tab .dv-default-tab-content::after {
   content: '';
   position: absolute;
@@ -663,13 +721,26 @@ main .dv-tab .dv-default-tab-content::after {
 main .dv-tab.dv-active-tab .dv-default-tab-content::after { opacity: 1; }
 main .dv-tab .dv-default-tab-action { flex-shrink: 0; }
 
-/* Keep Dockview's 4px hit target, but paint only a fine centered separator.
-   Endpoint inset and overflow clip keep the line out of adjacent header junctions. */
+/* Dockview positions a hard-coded 4px sash: expand to 10px and offset -3px
+   to preserve its center. Shorten the long axis 4px at both ends to avoid T-junction overlap. */
 main .dv-sash {
-  --workspace-sash-line-size: 1px;
+  --workspace-sash-line-size: 2px;
   --workspace-sash-line-color: var(--workspace-border);
   background: transparent;
   overflow: hidden;
+}
+
+main .dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash {
+  width: 10px;
+  height: calc(100% - 8px);
+  margin-left: -3px;
+  margin-top: 4px;
+}
+main .dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash {
+  height: 10px;
+  width: calc(100% - 8px);
+  margin-top: -3px;
+  margin-left: 4px;
 }
 
 main .dv-sash::after {
@@ -697,7 +768,7 @@ main .dv-vertical > .dv-sash-container > .dv-sash::after {
 
 main .dv-sash:not(.dv-disabled):hover,
 main .dv-sash:not(.dv-disabled):active {
-  --workspace-sash-line-size: 2px;
+  --workspace-sash-line-size: 3px;
   --workspace-sash-line-color: var(--workspace-accent);
 }
 
@@ -751,7 +822,9 @@ main .dv-tab:hover { color: var(--workspace-text); }
 
 @media (prefers-reduced-motion: reduce) {
   main .dv-tab,
-  main .dv-tab .dv-default-tab-content::before,
+  main .dv-tab .dv-default-tab::before,
+  main .dv-tab .dv-default-tab::after,
+  main .dv-dockview .dv-tab .dv-default-tab .dv-default-tab-action,
   main .dv-tab .dv-default-tab-content::after {
     transition: none;
   }
