@@ -21,7 +21,7 @@ onUnmounted(()=>{subscription?.dispose();clearTimeout(timer)});
 </script>
 <template>
 <div class="shell">
-<header class="top"><div class="brand"><span class="mark">▦</span> WORKSPACE <small>VUE LAB</small></div><nav>交易 <span>市场</span> <span>策略</span></nav><div class="right"><span class="demo-badge">DEMO · 无真实交易</span><button @click="exportLayout">导出布局</button></div></header>
+<header class="top"><div class="brand"><span class="mark">▦</span> WORKSPACE <small>VUE LAB</small></div><nav>交易 <span>市场</span> <span>策略</span></nav><div class="right"><span class="demo-badge">独立 DEMO · 非官方 · 无真实交易</span><button @click="exportLayout">导出布局</button></div></header>
 <section class="ticker"><strong>₿ BTC/USDT <small>永续</small></strong><div class="price">80,634.4 <em>+1.71%</em></div><div><label>标记价格</label>80,633.7</div><div><label>24小时最高</label>81,199.9</div><div><label>24小时最低</label>77,858.0</div><div><label>24小时成交额</label>26.97 亿</div><div class="toolbar"><button @click="editActive">编辑当前标签</button><button class="primary" @click="openAdd()">＋ 添加组件</button><button @click="defaults" title="恢复默认布局">↶ 重置</button></div></section>
 <div class="hint"><span>布局自由组合</span> 拖动标签到另一面板中心以合并，拖到边缘以拆分；拖动分隔线调整大小。<span class="right">Vue 3 + Dockview</span></div>
 <main><DockviewVue style="height:100%;width:100%" :theme="themeDark" @ready="ready"><template #panel-content="props"><PanelContent v-bind="props" /></template><template #rightHeaderActions="{ group }"><button class="group-add" aria-label="向面板添加标签" @click="openAdd(group)">＋</button></template><template #watermark><div class="empty">工作台为空 <button @click="openAdd()">添加组件</button></div></template></DockviewVue></main>
