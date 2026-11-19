@@ -1,8 +1,8 @@
-/* Theme v2: independent BingX-inspired demo, not an official product.
+/* Theme v3: independent BingX-inspired demo, not an official product.
    Active tabs use an absolute indicator, never state-dependent geometry.
    Sash hover/active is CSS-only; disabled dividers do not highlight. */
 :root {
-  --workspace-theme-version: 2;
+  --workspace-theme-version: 3;
   --workspace-accent: #0F5FFF;
   --workspace-accent-hover: #71A1FF;
   --workspace-bg: #020202;
@@ -219,7 +219,8 @@ main {
 main .dv-dockview {
   height: 100%;
   --dv-tab-divider-color: transparent;
-  --dv-tab-height: 36px;
+  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-font-size: 12px;
   --dv-group-view-background-color: var(--workspace-surface);
   --dv-tabs-and-actions-container-background-color: var(--workspace-surface);
   --dv-activegroup-visiblepanel-tab-background-color: var(--workspace-surface);
@@ -301,9 +302,9 @@ footer {
 
 .chart {
   width: 100%;
-  flex: 1 1 0;
-  height: 0;
-  min-height: 0;
+  flex: 1 0 120px;
+  height: auto;
+  min-height: 120px;
   display: block;
 }
 
@@ -615,30 +616,52 @@ button.primary:hover {
   box-shadow: inset 0 0 0 1px var(--workspace-accent-hover);
 }
 
+/* Header separator is painted inside the existing box, so its height never changes. */
+main .dv-tabs-and-actions-container,
+main .dv-tab {
+  box-shadow: inset 0 -1px 0 #2b2e35;
+}
 main .dv-tab {
   position: relative;
   border-top: 0;
-  font-weight: 400;
+  padding: 0 12px 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  transition: color 140ms ease;
 }
-
-main .dv-tab::after {
+main .dv-tab .dv-default-tab-content {
+  position: relative;
+  isolation: isolate;
+  line-height: 20px;
+}
+/* The rounded hover pill and underline follow the label, not the close-button slot. */
+main .dv-tab .dv-default-tab-content::before {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 12px;
-  right: 12px;
-  height: 2px;
-  background: transparent;
+  inset: -3px -7px;
+  border-radius: 6px;
+  background: #ffffff14;
+  opacity: 0;
+  z-index: -1;
   pointer-events: none;
+  transition: opacity 140ms ease;
 }
-
-main .dv-tab.dv-active-tab::after {
+main .dv-tab:hover .dv-default-tab-content::before { opacity: 1; }
+main .dv-tab .dv-default-tab-content::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 2px;
   background: var(--workspace-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
 }
-
-main .dv-tab .dv-default-tab-action {
-  flex-shrink: 0;
-}
+main .dv-tab.dv-active-tab .dv-default-tab-content::after { opacity: 1; }
+main .dv-tab .dv-default-tab-action { flex-shrink: 0; }
 
 /* Keep Dockview's 4px hit target, but paint only a fine centered separator.
    Endpoint inset and overflow clip keep the line out of adjacent header junctions. */
@@ -714,14 +737,34 @@ main .dv-tab:hover { color: var(--workspace-text); }
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 .panel-body--chart > .chart-tools,
 .panel-body--chart > .ohlc,
 .panel-body--chart > .time-axis {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 .panel-body--chart > .ohlc { text-overflow: ellipsis; }
+
+@media (prefers-reduced-motion: reduce) {
+  main .dv-tab,
+  main .dv-tab .dv-default-tab-content::before,
+  main .dv-tab .dv-default-tab-content::after {
+    transition: none;
+  }
+  main .dv-dockview {
+    --dv-active-sash-transition-duration: 0s;
+  }
+}
+
+/* Blink/WebKit get an exact 6px track; Firefox retains the standards-based thin fallback. */
+@supports selector(::-webkit-scrollbar) {
+  .panel-body, .note-pad textarea,
+  .panel-body:hover, .note-pad textarea:hover {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}
