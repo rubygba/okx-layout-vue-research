@@ -48,15 +48,20 @@ for (const orientation of ['vertical', 'horizontal']) {
     expect(sash, `${orientation} enabled splitter`).toBeTruthy();
     const chart = page.locator('.dv-groupview').filter({ has: tab(page, '图表') });
     const before = await chart.boundingBox();
-    const colour = () => sash.evaluate(e => getComputedStyle(e).backgroundColor);
+    const colour = () => sash.evaluate(e => getComputedStyle(e, '::after').backgroundColor);
+    const thickness = () => sash.evaluate((e, axis) => parseFloat(getComputedStyle(e, '::after')[axis]), orientation === 'vertical' ? 'width' : 'height');
     await page.mouse.move(1, 1);
     const idleColour = await colour();
+    expect(await thickness()).toBe(1);
     const box = await sash.boundingBox();
     const x = box.x + box.width / 2, y = box.y + box.height / 2;
     await page.mouse.move(x, y);
     // Await the completed CSS transition, not an intermediate blended colour.
     const highlighted = 'rgb(15, 95, 255)';
     await expect.poll(colour).toBe(highlighted);
+    await expect.poll(thickness).toBe(2);
+    const hoverBox = await sash.boundingBox();
+    expect(orientation === 'vertical' ? hoverBox.width : hoverBox.height).toBe(orientation === 'vertical' ? box.width : box.height);
     expect(highlighted).not.toBe(idleColour);
     expect(highlighted).not.toMatch(/^(transparent|rgba\(0, 0, 0, 0\))$/);
     await page.mouse.down();
@@ -64,9 +69,55 @@ for (const orientation of ['vertical', 'horizontal']) {
     await expect.poll(colour).toBe(highlighted);
     const axis = orientation === 'vertical' ? 'width' : 'height';
     await expect.poll(async () => Math.abs((await chart.boundingBox())[axis] - before[axis])).toBeGreaterThan(10);
+    await expect.poll(thickness).toBe(2);
+    const dragBox = await sash.boundingBox();
+    expect(orientation === 'vertical' ? dragBox.width : dragBox.height).toBe(orientation === 'vertical' ? box.width : box.height);
+    await page.screenshot({ path: `test-results/splitter-${orientation}-active.png` });
+    if (orientation === 'horizontal') {
+      const bounds = await sash.boundingBox();
+      await page.screenshot({ path: 'test-results/02-splitter-detail.png', clip: { x: bounds.x, y: Math.max(0, bounds.y - 65), width: bounds.width, height: 134 } });
+    }
     await page.mouse.up();
     await page.mouse.move(1, 1);
     await expect.poll(colour).toBe(idleColour);
+    await expect.poll(thickness).toBe(1);
+    const chartBody = chart.locator('.panel-body');
+    expect(await chartBody.evaluate(e => e.scrollHeight - e.clientHeight)).toBeLessThanOrEqual(1);
     await expect(page.locator('.dv-tab')).toHaveCount(6);
   });
 }
+
+
+test('chart fits its viewport, real overflowing panel scrolls, and blank headers match inactive tabs', async ({ page }) => {
+  await page.goto('/');
+  const chart = page.locator('.dv-groupview').filter({ has: tab(page, '图表') });
+  await expect(chart.locator('svg.chart')).toBeVisible();
+  expect(await chart.locator('.panel-body').evaluate(e => e.scrollHeight - e.clientHeight)).toBeLessThanOrEqual(1);
+  const inactive = tab(page, '当前委托');
+  const header = inactive.locator('xpath=ancestor::*[contains(@class,"dv-tabs-and-actions-container")][1]');
+  const background = element => element.evaluate(e => getComputedStyle(e).backgroundColor);
+  expect(await background(inactive)).toBe(await background(header));
+  await page.screenshot({ path: 'test-results/01-workspace.png' });
+  // The trade form is intentionally taller than a small viewport. Do not hide real overflow.
+  await page.setViewportSize({ width: 1440, height: 420 });
+  const trade = page.locator('.dv-groupview').filter({ has: tab(page, '交易') }).locator('.panel-body');
+  await expect.poll(() => trade.evaluate(e => e.scrollHeight - e.clientHeight)).toBeGreaterThan(20);
+  expect(await trade.evaluate(e => getComputedStyle(e).overflowY)).toMatch(/auto|scroll/);
+  const scrollbarWidth = await trade.evaluate(e => getComputedStyle(e, '::-webkit-scrollbar').width);
+  expect(parseFloat(scrollbarWidth)).toBeGreaterThan(0);
+  await trade.hover();
+  await page.mouse.wheel(0, 240);
+  await expect.poll(() => trade.evaluate(e => e.scrollTop)).toBeGreaterThan(0);
+  await page.screenshot({ path: 'test-results/overflow-scrolling.png' });
+  await tab(page, '订单簿').click();
+  const bookGroup = page.locator('.dv-groupview').filter({ has: tab(page, '订单簿') });
+  const book = bookGroup.locator('.panel-body');
+  await expect.poll(() => book.evaluate(e => e.scrollHeight - e.clientHeight)).toBeGreaterThan(20);
+  await book.hover();
+  await page.mouse.wheel(0, 100);
+  await expect.poll(() => book.evaluate(e => e.scrollTop)).toBeGreaterThan(0);
+  await bookGroup.screenshot({ path: 'test-results/03-orderbook-scroll.png' });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect.poll(() => chart.locator('.panel-body').evaluate(e => e.scrollHeight - e.clientHeight)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: 'test-results/workspace-polished.png' });
+});
