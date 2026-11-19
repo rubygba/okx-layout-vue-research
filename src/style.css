@@ -1,8 +1,8 @@
-/* Theme v1: independent BingX-inspired demo, not an official product.
+/* Theme v2: independent BingX-inspired demo, not an official product.
    Active tabs use an absolute indicator, never state-dependent geometry.
    Sash hover/active is CSS-only; disabled dividers do not highlight. */
 :root {
-  --workspace-theme-version: 1;
+  --workspace-theme-version: 2;
   --workspace-accent: #0F5FFF;
   --workspace-accent-hover: #71A1FF;
   --workspace-bg: #020202;
@@ -16,7 +16,8 @@
   --workspace-down: #F0616D;
   --workspace-up-subtle: #27AD7526;
   --workspace-accent-subtle: #0F5FFF29;
-  --workspace-resize-ring: #79a0ff66;
+  --workspace-scroll-thumb: #454b58;
+  --workspace-scroll-thumb-hover: #677184;
 }
 
 * {
@@ -220,18 +221,18 @@ main .dv-dockview {
   --dv-tab-divider-color: transparent;
   --dv-tab-height: 36px;
   --dv-group-view-background-color: var(--workspace-surface);
-  --dv-tabs-and-actions-container-background-color: var(--workspace-header);
+  --dv-tabs-and-actions-container-background-color: var(--workspace-surface);
   --dv-activegroup-visiblepanel-tab-background-color: var(--workspace-surface);
   --dv-inactivegroup-visiblepanel-tab-background-color: var(--workspace-surface);
-  --dv-activegroup-hiddenpanel-tab-background-color: var(--workspace-header);
-  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--workspace-header);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--workspace-surface);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--workspace-surface);
   --dv-activegroup-visiblepanel-tab-color: #ecf2ff;
   --dv-inactivegroup-visiblepanel-tab-color: #c9d5ea;
   --dv-activegroup-hiddenpanel-tab-color: #8492a8;
   --dv-inactivegroup-hiddenpanel-tab-color: #8492a8;
   --dv-separator-border: var(--workspace-border);
-  --dv-sash-color: var(--workspace-border);
-  --dv-active-sash-color: var(--workspace-accent);
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: transparent;
   --dv-active-sash-transition-delay: 0s;
   --dv-active-sash-transition-duration: 0.08s;
   --dv-drag-over-background-color: var(--workspace-accent-subtle);
@@ -300,8 +301,9 @@ footer {
 
 .chart {
   width: 100%;
-  height: calc(100% - 112px);
-  min-height: 100px;
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
   display: block;
 }
 
@@ -638,16 +640,88 @@ main .dv-tab .dv-default-tab-action {
   flex-shrink: 0;
 }
 
-main .dv-sash:not(.dv-disabled):hover {
-  background-color: var(--workspace-accent);
+/* Keep Dockview's 4px hit target, but paint only a fine centered separator.
+   Endpoint inset and overflow clip keep the line out of adjacent header junctions. */
+main .dv-sash {
+  --workspace-sash-line-size: 1px;
+  --workspace-sash-line-color: var(--workspace-border);
+  background: transparent;
+  overflow: hidden;
 }
 
+main .dv-sash::after {
+  content: '';
+  position: absolute;
+  background: var(--workspace-sash-line-color);
+  pointer-events: none;
+}
+
+main .dv-horizontal > .dv-sash-container > .dv-sash::after {
+  top: 2px;
+  bottom: 2px;
+  left: 50%;
+  width: var(--workspace-sash-line-size);
+  transform: translateX(-50%);
+}
+
+main .dv-vertical > .dv-sash-container > .dv-sash::after {
+  left: 2px;
+  right: 2px;
+  top: 50%;
+  height: var(--workspace-sash-line-size);
+  transform: translateY(-50%);
+}
+
+main .dv-sash:not(.dv-disabled):hover,
 main .dv-sash:not(.dv-disabled):active {
-  background-color: var(--workspace-accent);
-  box-shadow: 0 0 0 1px var(--workspace-resize-ring);
+  --workspace-sash-line-size: 2px;
+  --workspace-sash-line-color: var(--workspace-accent);
 }
 
-main .dv-sash.dv-disabled {
-  background-color: var(--dv-sash-color);
+/* One surface across labels, empty tab-strip space and header actions. */
+main .dv-tab:hover { color: var(--workspace-text); }
+.group-add:hover { background: #ffffff08; }
+
+/* Genuine content overflow remains scrollable; scope chrome to this app. */
+.panel-body, .note-pad textarea {
+  scrollbar-width: thin;
+  scrollbar-color: var(--workspace-scroll-thumb) transparent;
+}
+.panel-body::-webkit-scrollbar, .note-pad textarea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.panel-body::-webkit-scrollbar-track, .note-pad textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-body::-webkit-scrollbar-thumb, .note-pad textarea::-webkit-scrollbar-thumb {
+  background: var(--workspace-scroll-thumb);
+  border-radius: 6px;
+}
+.panel-body::-webkit-scrollbar-thumb:hover, .note-pad textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--workspace-scroll-thumb-hover);
+}
+.panel-body:hover, .note-pad textarea:hover {
+  scrollbar-color: var(--workspace-scroll-thumb-hover) transparent;
+}
+.panel-body::-webkit-scrollbar-corner, .note-pad textarea::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
+/* No fixed-height subtraction: available chart height is exactly the flex remainder. */
+.panel-body--chart {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.panel-body--chart > .chart-tools,
+.panel-body--chart > .ohlc,
+.panel-body--chart > .time-axis {
+  flex: 0 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.panel-body--chart > .ohlc { text-overflow: ellipsis; }
