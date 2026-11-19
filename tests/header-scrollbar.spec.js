@@ -36,11 +36,12 @@ test('header divider, label inset and hover are stable with reduced motion suppo
   const durations=motion.duration.split(',').map(v=>parseFloat(v)*1000);
   expect(durations.every(v=>v>=120&&v<=160)).toBeTruthy();
   expect(motion.property).toContain('color');
-  const pill = await content.evaluate(e => {const s=getComputedStyle(e,'::before');return {duration:s.transitionDuration,property:s.transitionProperty};});
+  const pillElement = orders.locator('.dv-default-tab');
+  const pill = await pillElement.evaluate(e => {const s=getComputedStyle(e,'::before');return {duration:s.transitionDuration,property:s.transitionProperty};});
   expect(pill.property).toBe('opacity');expect(parseFloat(pill.duration)*1000).toBeGreaterThanOrEqual(120);expect(parseFloat(pill.duration)*1000).toBeLessThanOrEqual(160);
   await orders.hover();await page.waitForTimeout(180);
   expect(await content.boundingBox()).toEqual(text);
-  expect(await content.evaluate(e=>getComputedStyle(e,'::before').opacity)).toBe('1');
+  expect(await pillElement.evaluate(e=>getComputedStyle(e,'::before').opacity)).toBe('1');
   await header.screenshot({path:'test-results/02-tab-hover-current.png'});
   await orders.click();await checkDivider();
   expect(await content.boundingBox()).toEqual(text);

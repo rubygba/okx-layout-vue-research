@@ -52,14 +52,16 @@ for (const orientation of ['vertical', 'horizontal']) {
     const thickness = () => sash.evaluate((e, axis) => parseFloat(getComputedStyle(e, '::after')[axis]), orientation === 'vertical' ? 'width' : 'height');
     await page.mouse.move(1, 1);
     const idleColour = await colour();
-    expect(await thickness()).toBe(1);
+    expect(await thickness()).toBe(2);
     const box = await sash.boundingBox();
-    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    expect(orientation === 'vertical' ? box.width : box.height).toBeGreaterThanOrEqual(10);
+    // Start 3px off centre, outside the old 4px grab region.
+    const x = box.x + box.width / 2 + (orientation === 'vertical' ? 3 : 0), y = box.y + box.height / 2 + (orientation === 'horizontal' ? 3 : 0);
     await page.mouse.move(x, y);
     // Await the completed CSS transition, not an intermediate blended colour.
     const highlighted = 'rgb(15, 95, 255)';
     await expect.poll(colour).toBe(highlighted);
-    await expect.poll(thickness).toBe(2);
+    await expect.poll(thickness).toBe(3);
     const hoverBox = await sash.boundingBox();
     expect(orientation === 'vertical' ? hoverBox.width : hoverBox.height).toBe(orientation === 'vertical' ? box.width : box.height);
     expect(highlighted).not.toBe(idleColour);
@@ -69,7 +71,7 @@ for (const orientation of ['vertical', 'horizontal']) {
     await expect.poll(colour).toBe(highlighted);
     const axis = orientation === 'vertical' ? 'width' : 'height';
     await expect.poll(async () => Math.abs((await chart.boundingBox())[axis] - before[axis])).toBeGreaterThan(10);
-    await expect.poll(thickness).toBe(2);
+    await expect.poll(thickness).toBe(3);
     const dragBox = await sash.boundingBox();
     expect(orientation === 'vertical' ? dragBox.width : dragBox.height).toBe(orientation === 'vertical' ? box.width : box.height);
     await page.screenshot({ path: `test-results/splitter-${orientation}-active.png` });
@@ -80,7 +82,7 @@ for (const orientation of ['vertical', 'horizontal']) {
     await page.mouse.up();
     await page.mouse.move(1, 1);
     await expect.poll(colour).toBe(idleColour);
-    await expect.poll(thickness).toBe(1);
+    await expect.poll(thickness).toBe(2);
     const chartBody = chart.locator('.panel-body');
     expect(await chartBody.evaluate(e => e.scrollHeight - e.clientHeight)).toBeLessThanOrEqual(1);
     await expect(page.locator('.dv-tab')).toHaveCount(6);
